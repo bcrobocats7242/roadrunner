@@ -65,7 +65,7 @@ public class redAuto extends LinearOpMode {
 
         Pose2d startPose = new Pose2d(12, -61, Math.toRadians(270));
         Pose2d poseLeft = new Pose2d(10, -31, Math.toRadians(0));
-        Pose2d poseCenter = new Pose2d(10, -27, Math.toRadians(0));
+        Pose2d poseCenter = new Pose2d(10, -27, Math.toRadians(0)); 
         Pose2d poseRight = new Pose2d(27, -31, Math.toRadians(0));
         Pose2d scoredPose = new Pose2d(10, -31, Math.toRadians(0));
 
