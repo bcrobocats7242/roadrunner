@@ -1,13 +1,11 @@
-package org.firstinspires.ftc.teamcode.drive.opmode;
+package org.firstinspires.ftc.teamcode.drive;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
-
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -29,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Autonomous
-public class redAuto extends LinearOpMode {
+public class redAutoRestore extends LinearOpMode {
     DcMotor slide;
     Servo bucket;
     Servo drop;
@@ -67,8 +65,10 @@ public class redAuto extends LinearOpMode {
         Pose2d startPose = new Pose2d(12, -61, Math.toRadians(270));
         Pose2d poseLeft = new Pose2d(10, -31, Math.toRadians(0));
         Pose2d poseCenter = new Pose2d(12, -33, Math.toRadians(270));
-        Pose2d poseRight = new Pose2d(27, -31, Math.toRadians(0));
-        Pose2d scoredPose = new Pose2d(10, -31, Math.toRadians(0));
+        Pose2d poseRight = new Pose2d(22.5, -38.6, Math.toRadians(270));
+        Pose2d scoredLeft = new Pose2d(54.6, -28.5, Math.toRadians(180));
+        Pose2d scoredCenter = new Pose2d(54.6, -33.5, Math.toRadians(180));
+        Pose2d scoredRight = new Pose2d(54.6, -40, Math.toRadians(180));
 
         drive.setPoseEstimate(startPose);
         // STEP 1
@@ -82,45 +82,69 @@ public class redAuto extends LinearOpMode {
                 )
                 .build();
         Trajectory RIGHT_PURPLE_SCORE = drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(27, -31.6, Math.toRadians(0)), Math.toRadians(180))
+                .splineToLinearHeading(new Pose2d(22.5, -38.6, Math.toRadians(270)), Math.toRadians(270))
                 .build();
         // STEP 2
         Trajectory LEFT_YELLOW_SCORE = drive.trajectoryBuilder(poseLeft)
-                .splineToLinearHeading(new Pose2d(52.6, -27.5, Math.toRadians(180)), Math.toRadians(0),
-                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                .splineToLinearHeading(new Pose2d(54.6, -28.5, Math.toRadians(180)), Math.toRadians(0),
+                        SampleMecanumDrive.getVelocityConstraint(40, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
         Trajectory CENTER_YELLOW_SCORE = drive.trajectoryBuilder(poseCenter)
-                .splineToLinearHeading(new Pose2d(54.6, -34.5, Math.toRadians(180)), Math.toRadians(0),
-                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                .splineToLinearHeading(new Pose2d(54.6, -33.5, Math.toRadians(180)), Math.toRadians(0),
+                        SampleMecanumDrive.getVelocityConstraint(40, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
         Trajectory RIGHT_YELLOW_SCORE = drive.trajectoryBuilder(poseRight)
-                .splineToLinearHeading(new Pose2d(52.6, -34, Math.toRadians(180)), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(54.6, -40, Math.toRadians(180)), Math.toRadians(0),
+                        SampleMecanumDrive.getVelocityConstraint(40, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
-     //   Trajectory PICK_UP_WHITE = drive.trajectoryBuilder(scoredPose)
-     //           .build();
+       // STEP 3 Park
+        Trajectory LEFT_PARK = drive.trajectoryBuilder(scoredLeft)
+                .splineToLinearHeading(new Pose2d(51.6, -10.5, Math.toRadians(180)), Math.toRadians(0),
+                        SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                .build();
+        Trajectory CENTER_PARK = drive.trajectoryBuilder(scoredCenter)
+                .splineToLinearHeading(new Pose2d(51.6, -10.5, Math.toRadians(180)), Math.toRadians(0),
+                        SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                .build();
+        Trajectory RIGHT_PARK = drive.trajectoryBuilder(scoredRight)
+                .splineToLinearHeading(new Pose2d(51.6, -10.5, Math.toRadians(180)), Math.toRadians(0),
+                        SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                .build();
 
         waitForStart();
 
         if (!isStopRequested()) {
-           bucket.setPosition(0.65);
-           drop.setPosition(0);
+            bucket.setPosition(0.65);
+            drop.setPosition(0);
             if (lastDetectedcubeX < leftThreshold ) {
                 drive.followTrajectory(LEFT_PURPLE_SCORE);
                 drive.followTrajectory(LEFT_YELLOW_SCORE);
+                useSlide(1, 1250);
+                useSlideDown(1, -1200);
+                drive.followTrajectory(LEFT_PARK);
             }
             else if (lastDetectedcubeX < rightThreshold && lastDetectedcubeX > leftThreshold) {
                 drive.followTrajectory(CENTER_PURPLE_SCORE);
                 drive.followTrajectory(CENTER_YELLOW_SCORE);
+                useSlide(1, 1250);
+                useSlideDown(1, -1200);
+                drive.followTrajectory(CENTER_PARK);
 
             }
             else if (lastDetectedcubeX > rightThreshold) {
                 drive.followTrajectory(RIGHT_PURPLE_SCORE);
                 drive.followTrajectory(RIGHT_YELLOW_SCORE);
+                useSlide(1, 1250);
+                useSlideDown(1, -1200);
+                drive.followTrajectory(RIGHT_PARK);
 
             }
-           useSlide(1, 1250);
 
 
         }
@@ -159,7 +183,28 @@ public class redAuto extends LinearOpMode {
         slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
     }
+    public void useSlideDown(double pow, double dist) {
+        int encdist = Math.toIntExact(Math.round(dist));
 
+        slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if (pow > 0) {
+            slide.setTargetPosition(-encdist);
+        } else {
+            slide.setTargetPosition(encdist);
+        }
+        slide.setPower(pow);
+        slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while (slide.isBusy()) {
+            telemetry.addData("busy", dist);
+            telemetry.update();
+        }
+
+        slide.setPower(0);
+        slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+    }
 
     class RedCubePipeline extends OpenCvPipeline {
         @Override
@@ -206,4 +251,4 @@ public class redAuto extends LinearOpMode {
             return input;
         }
     }
-    }
+}
