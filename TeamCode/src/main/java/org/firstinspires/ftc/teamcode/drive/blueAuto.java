@@ -63,9 +63,10 @@ public class blueAuto extends LinearOpMode {
         drop = hardwareMap.get(Servo.class, "drop");
 
         Pose2d startPose = new Pose2d(12, 61, Math.toRadians(90));
-        Pose2d poseLeft = new Pose2d(22.5, 38.6, Math.toRadians(180));
+        Pose2d rightForward = new Pose2d(12,38, Math.toRadians(90));
+        Pose2d poseLeft = new Pose2d(22.5, 38.6, Math.toRadians(90));
         Pose2d poseCenter = new Pose2d(12, 33, Math.toRadians(90));
-        Pose2d poseRight = new Pose2d(10, 31.6, Math.toRadians(180));
+        Pose2d poseRight = new Pose2d(10, 31.6, Math.toRadians(0));
         Pose2d scoredLeft = new Pose2d(54.6, 28.5, Math.toRadians(180));
         Pose2d scoredCenter = new Pose2d(54.6, 33.5, Math.toRadians(180));
         Pose2d scoredRight = new Pose2d(54.6, 40, Math.toRadians(180));
@@ -73,7 +74,9 @@ public class blueAuto extends LinearOpMode {
         drive.setPoseEstimate(startPose);
         // STEP 1
         Trajectory LEFT_PURPLE_SCORE = drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(22.5, 38.6, Math.toRadians(90)), Math.toRadians(270))
+                .splineToLinearHeading(new Pose2d(22.5, 38.6, Math.toRadians(90)), Math.toRadians(270),
+        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
         Trajectory CENTER_PURPLE_SCORE = drive.trajectoryBuilder(startPose)
                 .splineToLinearHeading(new Pose2d(12,33, Math.toRadians(90)), Math.toRadians(90),
@@ -81,23 +84,30 @@ public class blueAuto extends LinearOpMode {
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
                 )
                 .build();
-        Trajectory RIGHT_PURPLE_SCORE = drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(10, 31.6, Math.toRadians(180)), Math.toRadians(0))
+        Trajectory RIGHT_PURPLE_Forward = drive.trajectoryBuilder(startPose)
+                .splineToLinearHeading(new Pose2d(12, 38, Math.toRadians(90)), Math.toRadians(270),
+                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                .build();
+        Trajectory RIGHT_PURPLE_SCORE = drive.trajectoryBuilder(rightForward)
+                .splineToLinearHeading(new Pose2d(7, 31.6, Math.toRadians(0)), Math.toRadians(0),
+        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
         // STEP 2
         Trajectory LEFT_YELLOW_SCORE = drive.trajectoryBuilder(poseLeft)
                 .splineToLinearHeading(new Pose2d(54.6, 40, Math.toRadians(180)), Math.toRadians(0),
-                        SampleMecanumDrive.getVelocityConstraint(40, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
         Trajectory CENTER_YELLOW_SCORE = drive.trajectoryBuilder(poseCenter)
                 .splineToLinearHeading(new Pose2d(54.6, 33.5, Math.toRadians(180)), Math.toRadians(0),
-                        SampleMecanumDrive.getVelocityConstraint(40, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
         Trajectory RIGHT_YELLOW_SCORE = drive.trajectoryBuilder(poseRight)
                 .splineToLinearHeading(new Pose2d(54.6, 28.5, Math.toRadians(180)), Math.toRadians(0),
-                        SampleMecanumDrive.getVelocityConstraint(40, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
         // STEP 3 Park
@@ -138,6 +148,7 @@ public class blueAuto extends LinearOpMode {
 
             }
             else if (lastDetectedcubeX > rightThreshold) {
+                drive.followTrajectory(RIGHT_PURPLE_Forward);
                 drive.followTrajectory(RIGHT_PURPLE_SCORE);
                 drive.followTrajectory(RIGHT_YELLOW_SCORE);
                 useSlide(1, 1250);
@@ -168,7 +179,7 @@ public class blueAuto extends LinearOpMode {
         }
         sleep(380);
         bucket.setPosition(0.5);
-        sleep(300);
+        sleep(600);
 
         drop.setPosition(0.5);
         sleep(500);
