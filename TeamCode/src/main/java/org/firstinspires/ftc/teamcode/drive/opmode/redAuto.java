@@ -71,7 +71,7 @@ public class redAuto extends LinearOpMode {
         Pose2d scoredPose = new Pose2d(10, -31, Math.toRadians(0));
 
         drive.setPoseEstimate(startPose);
-        // STEP 1
+        // STEP 1 Score Purple
         Trajectory LEFT_PURPLE_SCORE = drive.trajectoryBuilder(startPose)
                 .splineToLinearHeading(new Pose2d(10, -31.6, Math.toRadians(0)), Math.toRadians(180))
                 .build();
@@ -84,7 +84,7 @@ public class redAuto extends LinearOpMode {
         Trajectory RIGHT_PURPLE_SCORE = drive.trajectoryBuilder(startPose)
                 .splineToLinearHeading(new Pose2d(27, -31.6, Math.toRadians(0)), Math.toRadians(180))
                 .build();
-        // STEP 2
+        // STEP 2 Score Yellow
         Trajectory LEFT_YELLOW_SCORE = drive.trajectoryBuilder(poseLeft)
                 .splineToLinearHeading(new Pose2d(52.6, -27.5, Math.toRadians(180)), Math.toRadians(0),
                         SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
@@ -98,8 +98,10 @@ public class redAuto extends LinearOpMode {
         Trajectory RIGHT_YELLOW_SCORE = drive.trajectoryBuilder(poseRight)
                 .splineToLinearHeading(new Pose2d(52.6, -34, Math.toRadians(180)), Math.toRadians(0))
                 .build();
-     //   Trajectory PICK_UP_WHITE = drive.trajectoryBuilder(scoredPose)
-     //           .build();
+        //STEP 3  Pickup White
+        //   Trajectory PICK_UP_WHITE = drive.trajectoryBuilder(scoredPose)
+        //      .build();
+        //STEP 4 Score White
 
         waitForStart();
 
