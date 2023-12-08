@@ -78,23 +78,23 @@ public class teleop extends LinearOpMode {
                     strafe_FL_Y = -gamepad1.left_stick_y;
                     strafe_FR_Y = -gamepad1.left_stick_y;
                     strafe_BL_Y = -gamepad1.left_stick_y;
-                } else if (gamepad1.left_stick_x > 0.1) {
-                    // left turn
-                    turn_FL_X = -gamepad1.left_stick_x;
-                    turn_FR_X = gamepad1.left_stick_x;
-                    turn_BL_X = -gamepad1.left_stick_x;
-                    turn_BR_X = gamepad1.left_stick_x;
-                } else if (gamepad1.left_stick_x < -0.1) {
-                    // right turn
-                    turn_FL_X = -gamepad1.left_stick_x;
-                    turn_FR_X = gamepad1.left_stick_x;
-                    turn_BL_X = -gamepad1.left_stick_x;
-                    turn_BR_X = gamepad1.left_stick_x;
+                } else if (gamepad1.left_stick_x > 0.25) {
+                    // right strafe
+                    strafe_FL_X = gamepad1.left_stick_x;
+                    strafe_FR_X = -gamepad1.left_stick_x;
+                    strafe_BL_X = -gamepad1.left_stick_x;
+                    strafe_BR_X = gamepad1.left_stick_x;
+                } else if (gamepad1.left_stick_x < -0.25) {
+                    // left strafe
+                    strafe_FL_X = gamepad1.left_stick_x;
+                    strafe_FR_X = -gamepad1.left_stick_x;
+                    strafe_BL_X = -gamepad1.left_stick_x;
+                    strafe_BR_X = gamepad1.left_stick_x;
                 } else {
-                    turn_FL_X = 0;
-                    turn_FR_X = 0;
-                    turn_BL_X = 0;
-                    turn_BR_X = 0;
+                    strafe_FL_X = 0;
+                    strafe_FR_X = 0;
+                    strafe_BL_X = 0;
+                    strafe_BR_X = 0;
                     strafe_FL_Y = 0;
                     strafe_FR_Y = 0;
                     strafe_BL_Y = 0;
@@ -102,23 +102,23 @@ public class teleop extends LinearOpMode {
                 }
                 // turn
                 if (gamepad1.right_stick_x > 0.1) {
-                    // right strafe
-                    strafe_FL_X = gamepad1.right_stick_x;
-                    strafe_FR_X = -gamepad1.right_stick_x;
-                    strafe_BL_X = -gamepad1.right_stick_x;
-                    strafe_BR_X = gamepad1.right_stick_x;
+                    // left turn
+                    turn_FL_X = -gamepad1.right_stick_x;
+                    turn_FR_X = gamepad1.right_stick_x;
+                    turn_BL_X = -gamepad1.right_stick_x;
+                    turn_BR_X = gamepad1.right_stick_x;
                 } else if (gamepad1.right_stick_x < -0.1) {
-                    // left strafe
-                    strafe_FL_X = gamepad1.right_stick_x;
-                    strafe_FR_X = -gamepad1.right_stick_x;
-                    strafe_BL_X = -gamepad1.right_stick_x;
-                    strafe_BR_X = gamepad1.right_stick_x;
-
-                } else {
-                    strafe_FL_X = 0;
-                    strafe_FR_X = 0;
-                    strafe_BL_X = 0;
-                    strafe_BR_X = 0;
+                    // right turn
+                    turn_FL_X = -gamepad1.right_stick_x;
+                    turn_FR_X = gamepad1.right_stick_x;
+                    turn_BL_X = -gamepad1.right_stick_x;
+                    turn_BR_X = gamepad1.right_stick_x;
+                }
+                else {
+                    turn_FL_X = 0;
+                    turn_FR_X = 0;
+                    turn_BL_X = 0;
+                    turn_BR_X = 0;
                 }
                 // grab
                 if (gamepad1.right_bumper) {
