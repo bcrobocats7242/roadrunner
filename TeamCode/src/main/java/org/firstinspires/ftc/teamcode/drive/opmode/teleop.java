@@ -156,7 +156,10 @@ public class teleop extends LinearOpMode {
                     hangMotor.setPower(1);
                 }
                 else if (gamepad1.b) {
-                    hangServo.setPosition(0.52d);
+                    hangServo.setPosition(0.5);
+                }
+                else if (gamepad1.dpad_up) {
+                    hangServo.setPosition(0.64);
                 }
                 else {
                     hangMotor.setPower(0);
@@ -166,7 +169,7 @@ public class teleop extends LinearOpMode {
                 if (gamepad1.right_stick_button && gamepad1.left_stick_button) {
                     launch.setPosition(0.7);
                 } else {
-                    launch.setPosition(1);
+                    launch.setPosition(0.92);
                 }
 
 
