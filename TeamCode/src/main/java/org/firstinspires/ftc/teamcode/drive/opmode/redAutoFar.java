@@ -4,7 +4,6 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -28,9 +27,9 @@ import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.ArrayList;
 import java.util.List;
-@Disabled
+
 @Autonomous
-public class redAuto extends LinearOpMode {
+public class redAutoFar extends LinearOpMode {
     DcMotor slide;
     Servo bucket;
     Servo drop;
@@ -65,27 +64,26 @@ public class redAuto extends LinearOpMode {
         drop = hardwareMap.get(Servo.class, "drop");
 
 
-        Pose2d startPose = new Pose2d(12, -61, Math.toRadians(270));
-        Pose2d poseLeft = new Pose2d(10, -31, Math.toRadians(0));
-        Pose2d poseCenter = new Pose2d(12, -33, Math.toRadians(270));
-        Pose2d poseRight = new Pose2d(27, -31, Math.toRadians(0));
+        Pose2d startPose = new Pose2d(-37, -61, Math.toRadians(270));
+        Pose2d poseLeft = new Pose2d(-25, -31, Math.toRadians(0));
+        Pose2d poseCenter = new Pose2d(-36, -33, Math.toRadians(270));
+        Pose2d poseRight = new Pose2d(-47, -31, Math.toRadians(0));
         Pose2d scoredPose = new Pose2d(10, -31, Math.toRadians(0));
 
         drive.setPoseEstimate(startPose);
-        // STEP 1
+        // STEP 1 Score Purple
         Trajectory LEFT_PURPLE_SCORE = drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(10, -31.6, Math.toRadians(0)), Math.toRadians(180))
+                .splineToLinearHeading(new Pose2d(-25, -31.6, Math.toRadians(0)), Math.toRadians(180))
                 .build();
         Trajectory CENTER_PURPLE_SCORE = drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(12,-33, Math.toRadians(270)), Math.toRadians(270),
+                .splineToLinearHeading(new Pose2d(-36,-33, Math.toRadians(270)), Math.toRadians(270),
                         SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                )
+                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
         Trajectory RIGHT_PURPLE_SCORE = drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(27, -31.6, Math.toRadians(0)), Math.toRadians(180))
+                .splineToLinearHeading(new Pose2d(-47, -31.6, Math.toRadians(0)), Math.toRadians(180))
                 .build();
-        // STEP 2
+        // STEP 2 Score Yellow
         Trajectory LEFT_YELLOW_SCORE = drive.trajectoryBuilder(poseLeft)
                 .splineToLinearHeading(new Pose2d(52.6, -27.5, Math.toRadians(180)), Math.toRadians(0),
                         SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
@@ -99,14 +97,16 @@ public class redAuto extends LinearOpMode {
         Trajectory RIGHT_YELLOW_SCORE = drive.trajectoryBuilder(poseRight)
                 .splineToLinearHeading(new Pose2d(52.6, -34, Math.toRadians(180)), Math.toRadians(0))
                 .build();
-     //   Trajectory PICK_UP_WHITE = drive.trajectoryBuilder(scoredPose)
-     //           .build();
+        //STEP 3  Pickup White
+        //   Trajectory PICK_UP_WHITE = drive.trajectoryBuilder(scoredPose)
+        //      .build();
+        //STEP 4 Score White
 
         waitForStart();
 
         if (!isStopRequested()) {
-           bucket.setPosition(0.65);
-           drop.setPosition(0);
+            bucket.setPosition(0.65);
+            drop.setPosition(0);
             if (lastDetectedcubeX < leftThreshold ) {
                 drive.followTrajectory(LEFT_PURPLE_SCORE);
                 drive.followTrajectory(LEFT_YELLOW_SCORE);
@@ -121,7 +121,7 @@ public class redAuto extends LinearOpMode {
                 drive.followTrajectory(RIGHT_YELLOW_SCORE);
 
             }
-           useSlide(1, 1250);
+            useSlide(1, 1250);
 
 
         }
@@ -207,4 +207,4 @@ public class redAuto extends LinearOpMode {
             return input;
         }
     }
-    }
+}

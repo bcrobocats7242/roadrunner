@@ -123,6 +123,7 @@ public class teleop extends LinearOpMode {
                 // grab
                 if (gamepad1.right_bumper) {
                     intake.setPower(1);
+                    slide.setPower(0.1);
                 } else if (gamepad1.left_bumper) {
                     intake.setPower(-1);
                 } else {
@@ -134,8 +135,13 @@ public class teleop extends LinearOpMode {
                     if (gamepad1.y) {
                         drop.setPosition(0.5);
                     }}
+                else if (gamepad1.b) {
+                    bucket.setPosition(0.46);
+                    if (gamepad1.y) {
+                        drop.setPosition(0.5);
+                    }}
                 else {
-                    bucket.setPosition(0.65);
+                    bucket.setPosition(0.64);
                     drop.setPosition(0);
                 }
                 // drop
@@ -149,13 +155,15 @@ public class teleop extends LinearOpMode {
                 }
                 // hang functions
                 if (gamepad1.dpad_left) {
-                    hangServo.setPosition(0);
+                    hangServo.setPosition(0.05
+
+                    );
                     hangMotor.setPower(-1); }
                 else if (gamepad1.dpad_right) {
-                    hangServo.setPosition(0);
+                    hangServo.setPosition(0.05);
                     hangMotor.setPower(1);
                 }
-                else if (gamepad1.b) {
+                else if (gamepad1.dpad_down) {
                     hangServo.setPosition(0.5);
                 }
                 else if (gamepad1.dpad_up) {

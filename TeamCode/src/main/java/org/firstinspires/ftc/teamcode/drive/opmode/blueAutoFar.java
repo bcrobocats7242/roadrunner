@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode.drive.opmode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -13,7 +13,6 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
-import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
@@ -29,19 +28,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Autonomous
-public class blueAuto extends LinearOpMode {
+public class blueAutoFar extends LinearOpMode {
     DcMotor slide;
     Servo bucket;
     Servo drop;
-    double cX = 0;
-    double cY = 0;
-    double width = 0;
-    public static final double objectWidthInRealWorldUnits = 3.75;
-    public static final double focalLength = 728;
-
 
     OpenCvWebcam webcam1 = null;
-    boolean noCube = false;
+    double lastDetectedcubeX = -1;
+    double noCube = 0;
     double leftThreshold = 500;
     double rightThreshold = 1000;
 
@@ -68,55 +62,77 @@ public class blueAuto extends LinearOpMode {
         bucket = hardwareMap.get(Servo.class, "bucket");
         drop = hardwareMap.get(Servo.class, "drop");
 
-        Pose2d startPose = new Pose2d(12, 61, Math.toRadians(90));
-        Pose2d rightForward = new Pose2d(12,38, Math.toRadians(90));
-        Pose2d poseLeft = new Pose2d(22.5, 38.6, Math.toRadians(90));
-        Pose2d poseCenter = new Pose2d(12, 33, Math.toRadians(90));
-        Pose2d poseRight = new Pose2d(10, 31.6, Math.toRadians(0));
+        Pose2d startPose = new Pose2d(-22, 61, Math.toRadians(90));
+        Pose2d rightForward = new Pose2d(-22,38, Math.toRadians(90));
+        Pose2d poseLeft = new Pose2d(-22.5, 38.6, Math.toRadians(225));
+        Pose2d poseCenter = new Pose2d(-12, 33, Math.toRadians(90));
+        Pose2d poseRight = new Pose2d(-10, 31.6, Math.toRadians(0));
+        Pose2d poseFromMoveOut = new Pose2d(-30.6,10, Math.toRadians(180));
+        Pose2d canopy = new Pose2d(-10.6, 10, Math.toRadians(180));
         Pose2d scoredLeft = new Pose2d(54.6, 28.5, Math.toRadians(180));
         Pose2d scoredCenter = new Pose2d(54.6, 33.5, Math.toRadians(180));
         Pose2d scoredRight = new Pose2d(54.6, 40, Math.toRadians(180));
+        // Not Finshed
 
         drive.setPoseEstimate(startPose);
         // STEP 1
         Trajectory LEFT_PURPLE_SCORE = drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(22.5, 38.6, Math.toRadians(90)), Math.toRadians(270),
-        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                .splineToLinearHeading(new Pose2d(-22.5, 38.6, Math.toRadians(225)), Math.toRadians(270),
+                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
         Trajectory CENTER_PURPLE_SCORE = drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(12,33, Math.toRadians(90)), Math.toRadians(90),
+                .splineToLinearHeading(new Pose2d(-12,33, Math.toRadians(90)), Math.toRadians(90),
                         SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
                 )
                 .build();
         Trajectory RIGHT_PURPLE_Forward = drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(12, 38, Math.toRadians(90)), Math.toRadians(270),
+                .splineToLinearHeading(new Pose2d(-12, 38, Math.toRadians(90)), Math.toRadians(270),
                         SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
         Trajectory RIGHT_PURPLE_SCORE = drive.trajectoryBuilder(rightForward)
-                .splineToLinearHeading(new Pose2d(7, 31.6, Math.toRadians(0)), Math.toRadians(0),
-        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                .splineToLinearHeading(new Pose2d(-7, 31.6, Math.toRadians(0)), Math.toRadians(0),
+                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
         // STEP 2
-        Trajectory LEFT_YELLOW_SCORE = drive.trajectoryBuilder(poseLeft)
+        Trajectory MOVE_OUT_FROM_LEFT = drive.trajectoryBuilder(poseLeft)
+                .splineToLinearHeading(new Pose2d(-30.6,10, Math.toRadians(180)), Math.toRadians(90))
+                        .build();
+        Trajectory MOVE_OUT_FROM_CENTER = drive.trajectoryBuilder(poseCenter)
+                .splineToLinearHeading(new Pose2d(-30.6,10, Math.toRadians(180)), Math.toRadians(90))
+                .build();
+        Trajectory MOVE_OUT_FROM_RIGHT = drive.trajectoryBuilder(poseRight)
+                .splineToLinearHeading(new Pose2d(-30.6,10, Math.toRadians(180)), Math.toRadians(90))
+                .build();
+        Trajectory MOVE_TO_CANOPY_FROM_LEFT = drive.trajectoryBuilder(poseFromMoveOut)
+                .splineToLinearHeading(new Pose2d(-10.6, 10, Math.toRadians(180)), Math.toRadians(90))
+                .build();
+        Trajectory MOVE_TO_CANOPY_FROM_CENTER = drive.trajectoryBuilder(poseFromMoveOut)
+                .splineToLinearHeading(new Pose2d(-10.6, 10, Math.toRadians(180)), Math.toRadians(90))
+                .build();
+        Trajectory MOVE_TO_CANOPY_FROM_RIGHT = drive.trajectoryBuilder(poseFromMoveOut)
+                .splineToLinearHeading(new Pose2d(-10.6, 10, Math.toRadians(180)), Math.toRadians(90))
+                .build();
+        // STEP 3
+        Trajectory LEFT_YELLOW_SCORE = drive.trajectoryBuilder(canopy)
                 .splineToLinearHeading(new Pose2d(54.6, 40, Math.toRadians(180)), Math.toRadians(0),
                         SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
-        Trajectory CENTER_YELLOW_SCORE = drive.trajectoryBuilder(poseCenter)
+        Trajectory CENTER_YELLOW_SCORE = drive.trajectoryBuilder(canopy)
                 .splineToLinearHeading(new Pose2d(54.6, 33.5, Math.toRadians(180)), Math.toRadians(0),
                         SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
-        Trajectory RIGHT_YELLOW_SCORE = drive.trajectoryBuilder(poseRight)
+        Trajectory RIGHT_YELLOW_SCORE = drive.trajectoryBuilder(canopy)
                 .splineToLinearHeading(new Pose2d(54.6, 28.5, Math.toRadians(180)), Math.toRadians(0),
                         SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
-        // STEP 3 Park
+        // STEP 4 Park
         Trajectory LEFT_PARK = drive.trajectoryBuilder(scoredLeft)
                 .splineToLinearHeading(new Pose2d(51.6, 10.5, Math.toRadians(180)), Math.toRadians(0),
                         SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
@@ -134,31 +150,36 @@ public class blueAuto extends LinearOpMode {
                 .build();
 
         waitForStart();
+
         if (!isStopRequested()) {
             bucket.setPosition(0.65);
             drop.setPosition(0);
-            if (cX < leftThreshold ) {
+            if (lastDetectedcubeX < leftThreshold ) {
                 drive.followTrajectory(LEFT_PURPLE_SCORE);
-                drive.followTrajectory(LEFT_YELLOW_SCORE);
-                useSlide(1, 1250);
-                useSlideDown(1, -1200);
-                drive.followTrajectory(LEFT_PARK);
+          //      drive.followTrajectory(MOVE_OUT_FROM_LEFT);
+         //       drive.followTrajectory(MOVE_TO_CANOPY_FROM_LEFT);
+         //       drive.followTrajectory(LEFT_YELLOW_SCORE);
+         //       useSlide(1, 1250);
+           //     useSlideDown(1, -1200);
+        //        drive.followTrajectory(LEFT_PARK);
             }
-            else if (cX < rightThreshold && cX > leftThreshold) {
+            else if (lastDetectedcubeX < rightThreshold && lastDetectedcubeX > leftThreshold) {
                 drive.followTrajectory(CENTER_PURPLE_SCORE);
-                drive.followTrajectory(CENTER_YELLOW_SCORE);
-                useSlide(1, 1250);
-                useSlideDown(1, -1200);
-                drive.followTrajectory(CENTER_PARK);
+         //     drive.followTrajectory(MOVE_TO_CANOPY_FROM_CENTER);
+         //     drive.followTrajectory(CENTER_YELLOW_SCORE);
+         //     useSlide(1, 1250);
+         //     useSlideDown(1, -1200);
+         //     drive.followTrajectory(CENTER_PARK);
 
             }
-            else if ((cX > rightThreshold || noCube) == true) {
+            else if (lastDetectedcubeX > rightThreshold) {
                 drive.followTrajectory(RIGHT_PURPLE_Forward);
-                drive.followTrajectory(RIGHT_PURPLE_SCORE);
-                drive.followTrajectory(RIGHT_YELLOW_SCORE);
-                useSlide(1, 1250);
-                useSlideDown(1, -1200);
-                drive.followTrajectory(RIGHT_PARK);
+         //     drive.followTrajectory(RIGHT_PURPLE_SCORE);
+         //     drive.followTrajectory(MOVE_TO_CANOPY_FROM_RIGHT);
+         //     drive.followTrajectory(RIGHT_YELLOW_SCORE);
+         //     useSlide(1, 1250);
+         //     useSlideDown(1, -1200);
+         //     drive.followTrajectory(RIGHT_PARK);
 
             }
 
@@ -182,7 +203,7 @@ public class blueAuto extends LinearOpMode {
             telemetry.addData("busy", dist);
             telemetry.update();
         }
-        sleep(500);
+        sleep(380);
         bucket.setPosition(0.5);
         sleep(600);
 
@@ -191,6 +212,9 @@ public class blueAuto extends LinearOpMode {
         bucket.setPosition(0.65);
         drop.setPosition(0);
         sleep(500);
+        //    slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        //    sleep(500);
         slide.setPower(0);
         slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -222,94 +246,55 @@ public class blueAuto extends LinearOpMode {
     class BlueCubePipeline extends OpenCvPipeline {
         @Override
         public Mat processFrame(Mat input) {
-            // Preprocess the frame to detect yellow regions
-            Mat blueMask = preprocessFrame(input);
+            // Define lower and upper bounds for cyan/light blue in HSV color space
+            Scalar lowerPink = new Scalar(80, 50, 50); // Adjust these values
+            Scalar upperPink = new Scalar(100, 255, 255); // Adjust these values
 
-            // Find contours of the detected yellow regions
+            // Convert the input image to the HSV color space
+            Imgproc.cvtColor(input, input, Imgproc.COLOR_RGB2HSV);
+
+            // Create a binary mask to identify cyan/light blue pixels
+            Mat pinkMask = new Mat();
+            Core.inRange(input, lowerPink, upperPink, pinkMask);
+
+            // Apply morphological operations to reduce noise
+            Mat morphKernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
+            Imgproc.morphologyEx(pinkMask, pinkMask, Imgproc.MORPH_CLOSE, morphKernel);
+            Imgproc.morphologyEx(pinkMask, pinkMask, Imgproc.MORPH_OPEN, morphKernel);
+
+            // Find contours in the binary mask
             List<MatOfPoint> contours = new ArrayList<>();
-            Mat hierarchy = new Mat();
-            Imgproc.findContours(blueMask, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+            Imgproc.findContours(pinkMask, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
-            // Find the largest yellow contour (blob)
-            MatOfPoint largestContour = findLargestContour(contours);
-
-            if (largestContour != null) {
-                // Draw a blue outline around the largest detected object
-                Imgproc.drawContours(input, contours, contours.indexOf(largestContour), new Scalar(255, 0, 0), 2);
-                // Calculate the width of the bounding box
-                width = calculateWidth(largestContour);
-
-                // Display the width next to the label
-                String widthLabel = "Width: " + (int) width + " pixels";
-                Imgproc.putText(input, widthLabel, new Point(cX + 10, cY + 20), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
-                //Display the Distance
-                String distanceLabel = "Distance: " + String.format("%.2f", getDistance(width)) + " inches";
-                Imgproc.putText(input, distanceLabel, new Point(cX + 10, cY + 60), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
-                // Calculate the centroid of the largest contour
-                Moments moments = Imgproc.moments(largestContour);
-                cX = moments.get_m10() / moments.get_m00();
-                cY = moments.get_m01() / moments.get_m00();
-
-                // Draw a dot at the centroid
-                String label = "(" + (int) cX + ", " + (int) cY + ")";
-                Imgproc.putText(input, label, new Point(cX + 10, cY), Imgproc.FONT_HERSHEY_COMPLEX, 0.5, new Scalar(0, 255, 0), 2);
-                Imgproc.circle(input, new Point(cX, cY), 5, new Scalar(0, 255, 0), -1);
-                if (cX < leftThreshold) {
-                    telemetry.addLine("left");
-                    telemetry.update();
-                } else if (cX < rightThreshold && cX > leftThreshold) {
-                    telemetry.addLine("middle");
-                    telemetry.update();
-                } else if (cX > rightThreshold) {
-                    telemetry.addLine("right");
-                    telemetry.update();
+            // Filter the contours to select cube-like shapes
+            List<MatOfPoint> cubeContours = new ArrayList<>();
+            for (MatOfPoint contour : contours) {
+                double area = Imgproc.contourArea(contour);
+                if (area > 1000) { // Adjust this threshold based on your cube size
+                    cubeContours.add(contour);
                 }
+            }
+
+            // Process detected cube contours
+            for (MatOfPoint cubeContour : cubeContours) {
+                // Calculate the center point of the cyan cube
+                Moments moments = Imgproc.moments(cubeContour);
+                double cubeX = moments.get_m10() / moments.get_m00();
+                double centerY = moments.get_m01() / moments.get_m00();
+
+                // Display telemetry for the cyan cube's location
+                telemetry.addData("Cyan Cube X", cubeX);
+                telemetry.addData("Cyan Cube Y", centerY);
                 telemetry.update();
+
+                lastDetectedcubeX = cubeX;
+
+                // Draw rectangles around the detected cubes on the original image
+                Rect rect = Imgproc.boundingRect(cubeContour);
+                Imgproc.rectangle(input, rect.tl(), rect.br(), new Scalar(255, 255, 0), 2); // Cyan color
             }
 
             return input;
         }
-
-        private Mat preprocessFrame(Mat frame) {
-            Mat hsvFrame = new Mat();
-            Imgproc.cvtColor(frame, hsvFrame, Imgproc.COLOR_BGR2HSV);
-
-            Scalar lowerBlue = new Scalar(10, 50, 50);
-            Scalar upperBlue = new Scalar(80, 255, 255);
-
-
-            Mat blueMask = new Mat();
-            Core.inRange(hsvFrame, lowerBlue, upperBlue, blueMask);
-
-            Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
-            Imgproc.morphologyEx(blueMask, blueMask, Imgproc.MORPH_OPEN, kernel);
-            Imgproc.morphologyEx(blueMask, blueMask, Imgproc.MORPH_CLOSE, kernel);
-
-            return blueMask;
-        }
-
-        private MatOfPoint findLargestContour(List<MatOfPoint> contours) {
-            double maxArea = 0;
-            MatOfPoint largestContour = null;
-
-            for (MatOfPoint contour : contours) {
-                double area = Imgproc.contourArea(contour);
-                if (area > maxArea) {
-                    maxArea = area;
-                    largestContour = contour;
-                }
-            }
-
-            return largestContour;
-        }
-        private double calculateWidth(MatOfPoint contour) {
-            Rect boundingRect = Imgproc.boundingRect(contour);
-            return boundingRect.width;
-        }
-
-    }
-    private static double getDistance(double width){
-        double distance = (objectWidthInRealWorldUnits * focalLength) / width;
-        return distance;
     }
 }
