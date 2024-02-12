@@ -1,11 +1,13 @@
-package org.firstinspires.ftc.teamcode.drive.opmode;
+package org.firstinspires.ftc.teamcode.drive;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name = "firstTeleop")
+import java.security.Policy;
+
+@TeleOp(name = "teleop")
 public class teleop extends LinearOpMode {
 
     public DcMotor FL;
@@ -131,18 +133,18 @@ public class teleop extends LinearOpMode {
                 }
                 // score
                 if (gamepad1.x) {
-                    bucket.setPosition(0.5);
+                    bucket.setPosition(0.15);
                     if (gamepad1.y) {
                         drop.setPosition(0.5);
                     }}
                 else if (gamepad1.b) {
-                    bucket.setPosition(0.46);
+                    bucket.setPosition(1);
                     if (gamepad1.y) {
                         drop.setPosition(0.5);
                     }}
                 else {
-                    bucket.setPosition(0.64);
-                    drop.setPosition(0);
+                    bucket.setPosition(0.35);
+                    drop.setPosition(0.15);
                 }
                 // drop
                 // slide rail
@@ -152,22 +154,20 @@ public class teleop extends LinearOpMode {
                     slide.setPower(-gamepad1.right_trigger);
                 } else {
                     slide.setPower(-0.1);
-                }
+                 }
                 // hang functions
                 if (gamepad1.dpad_left) {
-                    hangServo.setPosition(0.05
-
-                    );
+                    hangServo.setPosition(0);
                     hangMotor.setPower(-1); }
                 else if (gamepad1.dpad_right) {
-                    hangServo.setPosition(0.05);
+                    hangServo.setPosition(0);
                     hangMotor.setPower(1);
                 }
                 else if (gamepad1.dpad_down) {
-                    hangServo.setPosition(0.5);
+                    hangServo.setPosition(0.28);
                 }
                 else if (gamepad1.dpad_up) {
-                    hangServo.setPosition(0.64);
+                    hangServo.setPosition(0.63);
                 }
                 else {
                     hangMotor.setPower(0);
@@ -175,10 +175,14 @@ public class teleop extends LinearOpMode {
                 }
                 // launch drone
                 if (gamepad1.right_stick_button && gamepad1.left_stick_button) {
-                    launch.setPosition(0.7);
+                    launch.setPosition(1);
                 } else {
-                    launch.setPosition(0.92);
+                    launch.setPosition(0.9);
                 }
+                if (gamepad1.a && gamepad1.b) {
+                    useSlide(1,1300,1100);
+                }
+
 
 
                 FL.setPower(driveSpeed * (turn_FL_X + strafe_FL_X + strafe_FL_Y));
@@ -188,5 +192,49 @@ public class teleop extends LinearOpMode {
 
             }
         }
+    }
+    public void useSlide(double pow, double dist, double powDown) {
+        int encdist = Math.toIntExact(Math.round(dist));
+        int encdistDown = Math.toIntExact(Math.round(dist- 150));
+
+
+        slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if (pow > 0) {
+            slide.setTargetPosition(-encdist);
+        } else {
+            slide.setTargetPosition(encdist);
+        }
+        slide.setPower(pow);
+        slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while (slide.isBusy()) {
+            telemetry.addData("busy", dist);
+            telemetry.update();
+        }
+        sleep(500);
+        bucket.setPosition(0.15);
+        sleep(600);
+
+        drop.setPosition(0.5);
+        sleep(500);
+        bucket.setPosition(0.35);
+        drop.setPosition(0.15);
+        sleep(300);
+        slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if (powDown > 0) {
+            slide.setTargetPosition(-encdistDown);
+        } else {
+            slide.setTargetPosition(encdistDown);
+        }
+        slide.setPower(powDown);
+        slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while (slide.isBusy()) {
+            telemetry.addData("busy", dist);
+            telemetry.update();
+        }
+        slide.setPower(0);
+        slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 }

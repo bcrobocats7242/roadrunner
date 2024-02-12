@@ -8,8 +8,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.drive.DriveConstants;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -29,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Autonomous
-public class redAutoRestore extends LinearOpMode {
+public class redAuto extends LinearOpMode {
     DcMotor slide;
     Servo bucket;
     Servo drop;
@@ -108,7 +106,7 @@ public class redAutoRestore extends LinearOpMode {
         // STEP 2
         Trajectory LEFT_YELLOW_SCORE = drive.trajectoryBuilder(leftForward)
                 .splineToLinearHeading(new Pose2d(55.6, -26.5, Math.toRadians(180)), Math.toRadians(0),
-                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getVelocityConstraint(15, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
         Trajectory CENTER_YELLOW_SCORE = drive.trajectoryBuilder(poseCenter)
@@ -141,31 +139,28 @@ public class redAutoRestore extends LinearOpMode {
         waitForStart();
 
         if (!isStopRequested()) {
-            bucket.setPosition(0.65);
-            drop.setPosition(0);
+            bucket.setPosition(0.7);
+            drop.setPosition(0.15);
             if (cX < leftThreshold ) {
                 telemetry.addLine("LEFT");
                 drive.followTrajectory(LEFT_PURPLE_SCORE);
                 drive.followTrajectory(LEFT_PURPLE_Forward);
                 drive.followTrajectory(LEFT_YELLOW_SCORE);
-                useSlide(1, 1250);
-                useSlideDown(1, -1200);
+                useSlide(1, 1350,-1300);
                 drive.followTrajectory(LEFT_PARK);
             }
             else if (cX < rightThreshold && cX > leftThreshold) {
                 telemetry.addLine("CENTER");
                 drive.followTrajectory(CENTER_PURPLE_SCORE);
                 drive.followTrajectory(CENTER_YELLOW_SCORE);
-                useSlide(1, 1250);
-                useSlideDown(1, -1200);
+                useSlide(1, 1350,-1300);
                 drive.followTrajectory(CENTER_PARK);
             }
             else if (cX > rightThreshold) {
                 telemetry.addLine("RIGHT");
                 drive.followTrajectory(RIGHT_PURPLE_SCORE);
                 drive.followTrajectory(RIGHT_YELLOW_SCORE);
-                useSlide(1, 1250);
-                useSlideDown(1, -1200);
+                useSlide(1, 1350,-1300);
                 drive.followTrajectory(RIGHT_PARK);
 
             }
@@ -174,8 +169,10 @@ public class redAutoRestore extends LinearOpMode {
         }
     }
 
-    public void useSlide(double pow, double dist) {
+    public void useSlide(double pow, double dist, double powDown) {
         int encdist = Math.toIntExact(Math.round(dist));
+        int encdistDown = Math.toIntExact(Math.round(dist- 150));
+
 
         slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -190,46 +187,32 @@ public class redAutoRestore extends LinearOpMode {
             telemetry.addData("busy", dist);
             telemetry.update();
         }
-        sleep(600);
-        bucket.setPosition(0.5);
+        sleep(500);
+        bucket.setPosition(0.15);
         sleep(600);
 
         drop.setPosition(0.5);
         sleep(500);
-        bucket.setPosition(0.65);
-        drop.setPosition(0);
-        sleep(500);
-        //    slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        //    sleep(500);
-        slide.setPower(0);
-        slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-    }
-    public void useSlideDown(double pow, double dist) {
-        int encdist = Math.toIntExact(Math.round(dist));
-
+        bucket.setPosition(0.35);
+        drop.setPosition(0.15);
+        sleep(300);
         slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        if (pow > 0) {
-            slide.setTargetPosition(-encdist);
+        if (powDown > 0) {
+            slide.setTargetPosition(-encdistDown);
         } else {
-            slide.setTargetPosition(encdist);
+            slide.setTargetPosition(encdistDown);
         }
-        slide.setPower(pow);
+        slide.setPower(powDown);
         slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         while (slide.isBusy()) {
             telemetry.addData("busy", dist);
             telemetry.update();
         }
-
         slide.setPower(0);
         slide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
     }
-
     class RedCubePipeline extends OpenCvPipeline {
         @Override
         public Mat processFrame(Mat input) {

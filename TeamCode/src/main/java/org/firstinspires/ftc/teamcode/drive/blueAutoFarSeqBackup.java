@@ -1,15 +1,14 @@
 package org.firstinspires.ftc.teamcode.drive;
-
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.drive.DriveConstants;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -27,10 +26,11 @@ import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Disabled
 @Autonomous
-public class blueAuto extends LinearOpMode {
+public class blueAutoFarSeqBackup extends LinearOpMode {
     DcMotor slide;
+    DcMotor intake;
     Servo bucket;
     Servo drop;
     double cX = 0;
@@ -44,7 +44,6 @@ public class blueAuto extends LinearOpMode {
     boolean noCube = false;
     double leftThreshold = 500;
     double rightThreshold = 1000;
-
     @Override
     public void runOpMode() throws InterruptedException {
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam1");
@@ -53,7 +52,7 @@ public class blueAuto extends LinearOpMode {
         );
         webcam1 = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
 
-        webcam1.setPipeline(new BlueCubePipeline());
+        webcam1.setPipeline(new blueAutoFarSeqBackup.BlueCubePipeline());
 
         webcam1.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             public void onOpened() {
@@ -65,108 +64,91 @@ public class blueAuto extends LinearOpMode {
         });
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         slide = hardwareMap.get(DcMotor.class, "slide");
+        intake = hardwareMap.get(DcMotor.class, "intake");
         bucket = hardwareMap.get(Servo.class, "bucket");
         drop = hardwareMap.get(Servo.class, "drop");
+        Pose2d startPose = new Pose2d(-35, 61, Math.toRadians(90));
+        Pose2d centerPixel = new Pose2d( -60, 10, Math.toRadians(180));
+        Pose2d leftScoredPose = new Pose2d(51, 46, Math.toRadians(180));
+        Pose2d centerScoredPose = new Pose2d(52, 35, Math.toRadians(180));
+        Pose2d rightScoredPose = new Pose2d(52, 22, Math.toRadians(180));
 
-        Pose2d startPose = new Pose2d(12, 61, Math.toRadians(90));
-        Pose2d rightForward = new Pose2d(12,38, Math.toRadians(90));
-        Pose2d poseLeft = new Pose2d(22.5, 38.6, Math.toRadians(90));
-        Pose2d poseCenter = new Pose2d(12, 33, Math.toRadians(90));
-        Pose2d poseRight = new Pose2d(10, 31.6, Math.toRadians(0));
-        Pose2d scoredLeft = new Pose2d(54.6, 28.5, Math.toRadians(180));
-        Pose2d scoredCenter = new Pose2d(54.6, 33.5, Math.toRadians(180));
-        Pose2d scoredRight = new Pose2d(54.6, 40, Math.toRadians(180));
 
         drive.setPoseEstimate(startPose);
-        // STEP 1
-        Trajectory LEFT_PURPLE_SCORE = drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(22.5, 38.6, Math.toRadians(90)), Math.toRadians(270),
-        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .build();
-        Trajectory CENTER_PURPLE_SCORE = drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(12,33, Math.toRadians(90)), Math.toRadians(90),
-                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                )
-                .build();
-        Trajectory RIGHT_PURPLE_Forward = drive.trajectoryBuilder(startPose)
-                .splineToLinearHeading(new Pose2d(12, 38, Math.toRadians(90)), Math.toRadians(270),
-                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .build();
-        Trajectory RIGHT_PURPLE_SCORE = drive.trajectoryBuilder(rightForward)
-                .splineToLinearHeading(new Pose2d(7, 31.6, Math.toRadians(0)), Math.toRadians(0),
-        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .build();
-        // STEP 2
-        Trajectory LEFT_YELLOW_SCORE = drive.trajectoryBuilder(poseLeft)
-                .splineToLinearHeading(new Pose2d(54.6, 40, Math.toRadians(180)), Math.toRadians(0),
-                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .build();
-        Trajectory CENTER_YELLOW_SCORE = drive.trajectoryBuilder(poseCenter)
-                .splineToLinearHeading(new Pose2d(54.6, 33.5, Math.toRadians(180)), Math.toRadians(0),
-                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .build();
-        Trajectory RIGHT_YELLOW_SCORE = drive.trajectoryBuilder(poseRight)
-                .splineToLinearHeading(new Pose2d(54.6, 28.5, Math.toRadians(180)), Math.toRadians(0),
-                        SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .build();
-        // STEP 3 Park
-        Trajectory LEFT_PARK = drive.trajectoryBuilder(scoredLeft)
-                .splineToLinearHeading(new Pose2d(51.6, 10.5, Math.toRadians(180)), Math.toRadians(0),
-                        SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .build();
-        Trajectory CENTER_PARK = drive.trajectoryBuilder(scoredCenter)
-                .splineToLinearHeading(new Pose2d(51.6, 10.5, Math.toRadians(180)), Math.toRadians(0),
-                        SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .build();
-        Trajectory RIGHT_PARK = drive.trajectoryBuilder(scoredRight)
-                .splineToLinearHeading(new Pose2d(51.6, 10.5, Math.toRadians(180)), Math.toRadians(0),
-                        SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+
+        TrajectorySequence left = drive.trajectorySequenceBuilder(startPose)
+                .splineToLinearHeading(new Pose2d(-33,34, Math.toRadians(180)), Math.toRadians(90))
+                .forward(10)
+                .lineTo(new Vector2d(-39, 10))
+                .back(70)
+                .lineToConstantHeading(new Vector2d(55, 46))
                 .build();
 
+        TrajectorySequence center = drive.trajectorySequenceBuilder(startPose)
+                .splineToSplineHeading(new Pose2d(-35,37, Math.toRadians(115)), Math.toRadians(90))
+                .lineToLinearHeading(new Pose2d(-50,42, Math.toRadians(180)))
+                .strafeLeft(32)
+                //     .forward(12)
+                .back(90)
+                .lineToLinearHeading(new Pose2d(55, 40, Math.toRadians(180)))
+                .build();
+
+        //  TrajectorySequence center2 = drive.trajectorySequenceBuilder(centerPixel)
+        //        .back(90)
+        //        .lineToLinearHeading(new Pose2d(52, 35, Math.toRadians(180)))
+        //          .build();
+
+        TrajectorySequence right = drive.trajectorySequenceBuilder(startPose)
+                .lineToSplineHeading(new Pose2d(-46,36, Math.toRadians(80)))
+                .lineToSplineHeading(new Pose2d(-34,50, Math.toRadians(90)))
+                .forward(-30)
+                .splineToSplineHeading(new Pose2d(20,10, Math.toRadians(180)),Math.toRadians(10))
+                .lineTo(new Vector2d(55, 25))
+                .build();
+
+
+        TrajectorySequence outOfWayLeft = drive.trajectorySequenceBuilder(leftScoredPose)
+                .strafeLeft(32)
+                .build();
+        TrajectorySequence outOfWayCenter = drive.trajectorySequenceBuilder(centerScoredPose)
+                .strafeLeft(25)
+                .build();
+        TrajectorySequence outOfWayRight = drive.trajectorySequenceBuilder(rightScoredPose)
+                .strafeLeft(18)
+                .build();
+
+
         waitForStart();
+
         if (!isStopRequested()) {
             bucket.setPosition(0.7);
             drop.setPosition(0.15);
             if (cX < leftThreshold ) {
-                drive.followTrajectory(LEFT_PURPLE_SCORE);
-                drive.followTrajectory(LEFT_YELLOW_SCORE);
-                useSlide(1, 1350, -1200);
-                drive.followTrajectory(LEFT_PARK);
+                drive.followTrajectorySequence(left);
+                useSlide(1, 1350,-1300);
+                drive.followTrajectorySequence(outOfWayLeft);
+
             }
             else if (cX < rightThreshold && cX > leftThreshold) {
-                drive.followTrajectory(CENTER_PURPLE_SCORE);
-                drive.followTrajectory(CENTER_YELLOW_SCORE);
-                useSlide(1, 1350, -1200);
-                drive.followTrajectory(CENTER_PARK);
-
+                drive.followTrajectorySequence(center);
+                //    useIntake();
+                //    drive.followTrajectorySequence(center2);
+                useSlide(1, 1350, -1300);
+                drive.followTrajectorySequence(outOfWayCenter);
             }
-            else if ((cX > rightThreshold || noCube) == true) {
-                drive.followTrajectory(RIGHT_PURPLE_Forward);
-                drive.followTrajectory(RIGHT_PURPLE_SCORE);
-                drive.followTrajectory(RIGHT_YELLOW_SCORE);
-                useSlide(1, 1350, -1200);
-                drive.followTrajectory(RIGHT_PARK);
-
+            else if (cX > rightThreshold) {
+                drive.followTrajectorySequence(right);
+                useSlide(1, 1350, -1300);
+                drive.followTrajectorySequence(outOfWayRight);
             }
 
 
         }
     }
 
+
     public void useSlide(double pow, double dist, double powDown) {
         int encdist = Math.toIntExact(Math.round(dist));
-        int encdistDown = Math.toIntExact(Math.round(dist- 150));
-
 
         slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -182,20 +164,20 @@ public class blueAuto extends LinearOpMode {
             telemetry.update();
         }
         sleep(500);
-        bucket.setPosition(0.15);
+        bucket.setPosition(0.52);
         sleep(600);
 
         drop.setPosition(0.5);
         sleep(500);
-        bucket.setPosition(0.35);
+        bucket.setPosition(0.7);
         drop.setPosition(0.15);
-        sleep(300);
+
         slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         if (powDown > 0) {
-            slide.setTargetPosition(-encdistDown);
+            slide.setTargetPosition(-encdist);
         } else {
-            slide.setTargetPosition(encdistDown);
+            slide.setTargetPosition(encdist);
         }
         slide.setPower(powDown);
         slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -208,6 +190,15 @@ public class blueAuto extends LinearOpMode {
         slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
+    public void useIntake() {
+        intake.setPower(1);
+        sleep(2000);
+        intake.setPower(-1);
+        sleep(500);
+        intake.setPower(0);
+
+    }
+
     class BlueCubePipeline extends OpenCvPipeline {
         @Override
         public Mat processFrame(Mat input) {
@@ -217,7 +208,7 @@ public class blueAuto extends LinearOpMode {
             // Find contours of the detected yellow regions
             List<MatOfPoint> contours = new ArrayList<>();
             Mat hierarchy = new Mat();
-               Imgproc.findContours(blueMask, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+            Imgproc.findContours(blueMask, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
             // Find the largest yellow contour (blob)
             MatOfPoint largestContour = findLargestContour(contours);

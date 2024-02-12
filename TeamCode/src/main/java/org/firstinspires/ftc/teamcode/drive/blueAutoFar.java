@@ -1,8 +1,9 @@
-package org.firstinspires.ftc.teamcode.drive.opmode;
+package org.firstinspires.ftc.teamcode.drive;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -27,6 +28,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import java.util.ArrayList;
 import java.util.List;
 
+@Disabled
 @Autonomous
 public class blueAutoFar extends LinearOpMode {
     DcMotor slide;
@@ -72,7 +74,6 @@ public class blueAutoFar extends LinearOpMode {
         Pose2d scoredLeft = new Pose2d(54.6, 28.5, Math.toRadians(180));
         Pose2d scoredCenter = new Pose2d(54.6, 33.5, Math.toRadians(180));
         Pose2d scoredRight = new Pose2d(54.6, 40, Math.toRadians(180));
-        // Not Finshed
 
         drive.setPoseEstimate(startPose);
         // STEP 1
